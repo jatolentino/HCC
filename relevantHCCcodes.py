@@ -22,7 +22,10 @@ def extract_codes(text):
     try:
         # Regex pattern to match the code (letters followed by numbers and an optional period with more digits)
         #pattern = r'^\s*[A-Za-z]+\d+(\.\d+)?'
-        pattern = r'^\s*[A-Za-z]+\d+(\.\d+)?:'
+        pattern = r'^\s*[A-Za-z]+\d+(\.\d+)?:' # works
+        #pattern = r'\s*-\s*([A-Za-z]+\d+(\.\d+)?)\s*$'
+        #pattern = r'([A-Z]\d+\.?(\d+)?)'
+        
         lines = text.split('\n')
         
         # Find all matches using the pattern
@@ -92,7 +95,7 @@ code_to_check = "A021"  # The key you want to check
 
 
 # Extracting codes
-pn_to_analyze = "progress_notes/pn_9"
+pn_to_analyze = "progress_notes/pn_1"
 with open(pn_to_analyze, 'r') as file:
     text = file.read()
     the_codes = extract_codes(text)
