@@ -1,11 +1,13 @@
 ## HCC Assignement:
 
 ### 1. Draft
-This is a simple Regex matching that retrieves HCC codes in O(1) from the dictionary, only by searching the codes via pattern matching.
+This is a simple Regex matching that retrieves HCC codes in O(1) from the HCC hash table, only by searching the codes via pattern matching.
 
 To be especific:
 - O(1): To search the code within the dictionary from `HCC_relevant_codes.json`
 - O(n): To extract codes from the progress notes, where `n` is the number of lines of each note.
+
+> **Note: Hash table and dictionary are two words used indistinctly**
 
 <img src="./draft.svg" />
 
@@ -76,3 +78,11 @@ Outputs:
 ```sh
 ['E109']
 ```
+
+### 6. TO-DO
+- [X] `► Functionn to extract codes`
+- [X] `► Functionn to convert a *.csv file to a python hash table`
+- [X] `► Function to search in a HCC hash table`
+- [] `► Verify error handling where it's missing`
+- [] `► Test functions missing`
+- [] `► Edge cases missing: pn_6 and pn_7`
