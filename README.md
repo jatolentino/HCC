@@ -11,7 +11,7 @@ To be especific:
 
 <img src="./images/initial_draft.svg" />
 
-<img src="./images/1-layers.svg" />
+<img src="./images/2-layers.svg" />
 
 ### 2. Folder structure
 ```sh
@@ -85,6 +85,7 @@ Outputs:
 - [X] `► Functionn to extract codes`
 - [X] `► Functionn to convert a *.csv file to a python hash table`
 - [X] `► Function to search in a HCC hash table`
+- [ ] `► Work on a layered approach`
 - [ ] `► Verify error handling where it's missing`
 - [ ] `► Test functions missing`
 - [ ] `► Edge cases missing: pn_6 and pn_7`

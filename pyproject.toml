@@ -1,0 +1,30 @@
+[project]
+name = "hcc"
+version = "0.1.0"
+description = "assignement"
+authors = [
+    {name = "jatolentino",email = "jose_antoniotv@hotmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest (>=8.3.5,<9.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+packages = [
+    { include = "." }  # This tells Poetry to include everything in the root directory
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+#[tool.pytest.ini_options]
+# Directory where pytest should start searching for tests
+#testpaths = ["tests"]
+# Pattern for test file discovery
+#python_files = "test_*.py"
+# Pattern for test function discovery
+#python_functions = "test_*"
