@@ -30,3 +30,41 @@ def extract_assessment_plan(text):
         return assessment_plan
     
 # print(extract_assessment_plan(text))
+
+def match_icd10_codes(text):
+    """
+    Extracts icd-10 codes matching the pattern from the indivual assessment plans (text).
+
+    Assumption:
+        Each indivual assessment plan has maximun one code
+    Args:
+        text (str): Each individual assessment plan.
+
+    Returns:
+        list: A list of matching icd-10 codes, or an empty list if no matches are found.
+
+    Raises:
+        TypeError: If the input is not a text string
+    """
+    if not isinstance(text, str):
+        raise TypeError("Input must be a string.")
+
+    pattern = r"[A-TV-Z][0-9][0-9AB]\.?[0-9A-TV-Z]{0,4}"
+    #icd10 = []
+    icd10 = None
+
+    matches = re.findall(pattern, text)
+    if matches:
+        icd10 = matches[0]
+        return icd10
+    return None
+
+text = """2. Hyperglycemia due to type 2 diabetes mellitus -
+   Worsening
+   Continue Metformin1000 mg BID and Glimepiride 8 mg
+   Recommend a low sugar and low carbohydrate diet. Fruits and vegetables are acceptable.
+   Discussed 1/2 plate with non-starchy vegetables, 1/4 of plate with carbohydrates such as whole grain, 1/4 of plate with lean protein.
+   Include healthy fats in your meal like: Olive oil, canola oil, avocado, and nuts
+   E11.65: Type 2 diabetes mellitus with hyperglycemia"""
+   
+print(match_icd10_codes(text))

@@ -5,3 +5,4 @@ tempCodeRunnerFile.py
 .~lock.HCC_relevant_codes.csv#
 .venv
 .pytest_cache
+.hcc-project-*

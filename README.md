@@ -9,9 +9,9 @@ To be especific:
 
 > **Note: Hash table and dictionary are two words used indistinctly**
 
-<img src="./images/initial_draft.svg" />
+<img src="./images/full-layers.svg" />
 
-<img src="./images/2-layers.svg" />
+
 
 ### 2. Folder structure
 ```sh

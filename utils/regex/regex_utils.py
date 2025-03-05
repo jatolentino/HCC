@@ -1,4 +1,5 @@
 import re
+import json
 
 def extract_assessment_plan(text):
     """
@@ -58,29 +59,53 @@ def extract_assessment_plan(text):
         # Catch all exceptions and print an error message
         return f"Error occurred: {str(e)}"
 
-def extract_each_plan(input_text):
-    # Regular expression to extract the sections
-    # Removing white spaces in the beginning of each line
-    input_text = '\n'.join(line.lstrip() for line in input_text.splitlines())
-    
-    # Removing empty lines fromt the text:
-    input_text =  '\n'.join([line for line in input_text.splitlines() if line.strip()])
+def extract_each_plan(text):
+    """
+    Extract individual plans from the assessment plan section.
 
-    # Get indexes (start_of_section_idx_line) if section start wih 1. or 1)
-    # i.e [0,5,15,20,25]
-    lines = input_text.splitlines()
+    Args:
+        text (str): The plan section.
+
+    Returns:
+        list (str): A list of plans in plain text.
+        
+    Raises:
+        TypeError: If the input is not a string.
+        ValueError: If no plans or sections are found in the input text.
+    """
+    # Check if the input is a string
+    if not isinstance(text, str):
+        raise TypeError("Input must be a string.")
+    
+    # Removing white spaces in the beginning of each line
+    text = '\n'.join(line.lstrip() for line in text.splitlines())
+    
+    # Removing empty lines from the text
+    text = '\n'.join([line for line in text.splitlines() if line.strip()])
+
+    # Check if the cleaned text is empty after trimming
+    if not text.strip():
+        raise ValueError("The input text is empty after trimming whitespace.")
+
+    # Get indexes (start_of_section_idx_line) if section starts with 1. or 1)
+    lines = text.splitlines()
     len_text = len(lines)
     start_of_section_idx_line = []
     pattern = r"(^(\s?\d+)\.\s)|(^(\s\d+)\)\s)"
+    
     for index, line in enumerate(lines):
         if re.match(pattern, line):
-             start_of_section_idx_line.append(index)
+            start_of_section_idx_line.append(index)
     
-    # Get section from index to index + 1 => i.e: [0:5] : Section 1
+    # Check if we found any sections
+    if not start_of_section_idx_line:
+        raise ValueError("No sections found in the input text.")
+
+    # Get sections from index to index + 1 => i.e: [0:5] : Section 1
     section = []
-    for i,e in enumerate(start_of_section_idx_line):
-        if e != (start_of_section_idx_line[-1]):
-            unit_section = '\n'.join(lines[e:start_of_section_idx_line[i+1]])
+    for i, e in enumerate(start_of_section_idx_line):
+        if e != start_of_section_idx_line[-1]:
+            unit_section = '\n'.join(lines[e:start_of_section_idx_line[i + 1]])
             section.append(unit_section)
         else:
             unit_section = '\n'.join(lines[e:])
@@ -91,61 +116,80 @@ def extract_each_plan(input_text):
 
 def match_icd10_codes(text):
     """
-    Extracts icd-10 codes matching the pattern from the given text.
+    Extract an icd-10 code that matches the ixd10-regex-standard-pattern within each indivual assessment plan (text).
 
+    Assumption:
+        Each indivual assessment plan has maximun one code
     Args:
-        text (str): The input text.
+        text (str): Each individual assessment plan.
 
     Returns:
-        list: A list of matching icd-10 codes, or an empty list if no matches are found.
-
+        icd10 (str): A code that meets the icd10 regex standard
+        
     Raises:
-        TypeError: If there were no icd-10 codes found within the text
+        TypeError: If the input is not a text string
     """
     if not isinstance(text, str):
         raise TypeError("Input must be a string.")
 
     pattern = r"[A-TV-Z][0-9][0-9AB]\.?[0-9A-TV-Z]{0,4}"
+    #icd10 = []
+    icd10 = None
+
+    matches = re.findall(pattern, text)
     if matches:
-        matches = re.findall(pattern, text)
-    else:
-        raise TypeError("There were no icd10 codes found in the provided text")
-    
-    return matches
+        icd10 = matches[0]
+        return icd10
+    return None
 
 
-def is_icd10_an_hcc(code):
+def is_icd10_an_hcc(code, text):
     """
     Verify if the icd-10 code provided as input is an HCC code according to the hash table located in HCC_relevant_codes.json
 
     Args:
         code (str): the icd-10 code.
+        text (str): individual assessment plan
 
     Returns:
-        boolean: Returns True if the icd-10 code is found in the HCC hash table (therefore is HCC relevant) or False if it is not present in the hash table 
-        (list: A list of matching HCC codes, or an empty list if no matches are found.)
+        partial_output (dict): Returns this dictionary:
+        {
+            "condition_code": "<str>",
+            "condition_name": "<str>",
+            "is_hcc": <boolean>,
+        },
 
     Raises:
         TypeError: If the hcc_json_file_path.json is not a valid path, or if the json file is not formatted properly, or if the code provided as input is not a string
     """
     try:
         # Open the JSON file and load its contents into a dictionary
-        hcc_json_file_path = 'HCC_relevant_codes.json'
+        hcc_json_file_path = "HCC_relevant_codes.json"
+        # hcc_json_file_path = r"D:\\Doctustech\\DoctusTech_AI_engineer_technical-test\\HCC_relevant_codes.json"
         with open(hcc_json_file_path, 'r') as json_file:
-            data = json.load(json_file)
+            HCC_data = json.load(json_file)
             
         if not isinstance(code, str):
             raise ValueError("Input code must be a string")
 
+        # Remove the dot from the code:
+        code = code.replace('.', '')
         # Check if the code exists in the dictionary
-        if code in data:
+        partial_output = {}
+        if code in HCC_data:
             #print(f"The code '{code}' is present in the JSON file.")
-            return True
+            partial_output["condition_code"] = code
+            partial_output["condition_name"] = HCC_data[code]
+            partial_output["is_hcc"] = True
+            # partial_output["codition_data"] = langGraph_evaluation(text)
+            
         else:
-            return False
-            #print(f"The code '{code}' is NOT present in the JSON file.")
-    
+            partial_output["condition_code"] = code
+            # partial_output["condition_name"] = HCC_data[code]
+            partial_output["is_hcc"] = False
+        return partial_output
     except FileNotFoundError:
         raise FileNotFoundError(f"Error: The file '{hcc_json_file_path}' was not found.")
     except json.JSONDecodeError:
         raise ValueError(f"Error: The file '{hcc_json_file_path}' is not a valid JSON file.")
+    
