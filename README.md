@@ -1,8 +1,12 @@
 ## HCC Assignement
 
-<img style="text-align:center" src="./assets/gifs/demo_HCC.gif"/>
+<div align="center">
+    <img src="./assets/gifs/demo_HCC.gif"/>
+</div>
 
-> Watch the video demo <a href="./assets/vides/demo_HCC.mp4">here 🎥</a> 
+<div align="center">
+Watch the video demo <a href="./assets/videos/demo_HCC.mp4">here 🎥</a> 
+</div>
 
 ### 1. Overview
 The following implementation is divided in a set of regex layers, a hash table comparision to validate HCC codes and a LangGraph pipeline. In a nutshell, several progress notes are analyzed and the final output after the analysis process is:
@@ -28,10 +32,12 @@ The following Diagram depicts the layered approach and
 
 <img src="./assets/images/full-layers.svg" />
 
-<p style="text-align:center;"><b>Fig. 1.</b> Layered Implementation</p>
-
+<div align="center">
+    <b>Fig. 1.</b> Layered Implementation
+</div>
 
 > **Note: Hash table and dictionary are two words used indistinctly**
+
 ### 2. How to run it
 - Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
 
@@ -208,7 +214,9 @@ stateDiagram-v2
     Error_Handler --> [*]
 ```
 
-<p style="text-align:center;"><b>Fig. 2.</b> Pipeline Graph of `langGraph_evaluation()`</p>
+<div align="center">
+    <b>Fig. 2.</b> Pipeline Graph of `langGraph_evaluation()
+</div>
 
 ### 5. Convert the CSV to a python hash table for `O(1)` search
 
@@ -251,22 +259,23 @@ source .venv/Scripts/activate
 ### 7. How to run it locally
 - Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
 
-```sh
-PROJECT_ID=
-LOCATION=
-CREDENTIALS_PATH=
-PROGRESS_NOTES_FOLDER=
-```
+    ```sh
+    PROJECT_ID=
+    LOCATION=
+    CREDENTIALS_PATH=
+    PROGRESS_NOTES_FOLDER=
+    ```
 
 - After the python packages have been install with poetry (step 6.), run the script locally
 
-```sh
-python main.py
-```
+    ```sh
+    python main.py
+    ```
 
 >Note: Verify that the folder to analyze is defined in the parameter `root_folder` within the main.py file. The output will be stored in the `result/output` file
 
 ### 8. Tests
+
 Run
 ```sh
 pytest

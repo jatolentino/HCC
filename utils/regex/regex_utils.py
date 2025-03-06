@@ -121,9 +121,10 @@ def match_icd10_codes(text):
 
     Assumption:
         Each indivual assessment plan has maximun one code
+        
     Args:
         text (str): Each individual assessment plan.
-
+        
     Returns:
         icd10 (str): A code that meets the icd10 regex standard
         
