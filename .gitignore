@@ -1,4 +1,4 @@
-progress_notes
+#progress_notes
 AI Engineer Technical Test.pdf
 HCC_relevant_codes.csv
 tempCodeRunnerFile.py
@@ -8,5 +8,5 @@ tempCodeRunnerFile.py
 .hcc-project-*
 __pycache__
 .git
-pn
 .env
+hcc-project-*.json

@@ -16,8 +16,8 @@ RUN poetry install
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
-# Run main.py when the container launches
-CMD ["python", "main.py"]
+# Run the application with Poetry to use the virtual environment
+CMD ["poetry", "run", "python", "main.py"]
 
 # Define a volume to store the output
 VOLUME ["/app/result"]

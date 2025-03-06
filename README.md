@@ -1,11 +1,10 @@
-## HCC Assignement:
+## HCC Assignement
+
+<img style="text-align:center" src="./assets/gifs/demo_HCC.gif"/>
+
+> Watch the video demo <a href="./assets/vides/demo_HCC.mp4">here 🎥</a> 
 
 ### 1. Overview
-<!-- This is a simple Regex matching that retrieves HCC codes in O(1) from the HCC hash table, only by searching the codes via pattern matching.
-
-To be especific:
-- O(1): To search the code within the dictionary from `HCC_relevant_codes.json`
-- O(n): To extract codes from the progress notes, where `n` is the number of lines of each note. -->
 The following implementation is divided in a set of regex layers, a hash table comparision to validate HCC codes and a LangGraph pipeline. In a nutshell, several progress notes are analyzed and the final output after the analysis process is:
 ```
     {
@@ -27,7 +26,7 @@ The transition between layers is made in 5 phases determined by the following fu
 
 The following Diagram depicts the layered approach and 
 
-<img src="./images/full-layers.svg" />
+<img src="./assets/images/full-layers.svg" />
 
 <p style="text-align:center;"><b>Fig. 1.</b> Layered Implementation</p>
 
@@ -36,12 +35,12 @@ The following Diagram depicts the layered approach and
 ### 2. How to run it
 - Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
 
-```sh
-PROJECT_ID=
-LOCATION=
-CREDENTIALS_PATH=
-PROGRESS_NOTES_FOLDER=
-```
+    ```sh
+    PROJECT_ID=
+    LOCATION=
+    CREDENTIALS_PATH=
+    PROGRESS_NOTES_FOLDER=
+    ```
 
 - Build the docker image
     ```sh
@@ -240,7 +239,7 @@ poetry install
 ```
 Activate the environment
 ```sh
-poetry sheell
+poetry shell
 ```
 
 Or
@@ -281,5 +280,7 @@ pytest
 - [X] `► Verify error handling where it's missing`
 - [X] `► Edge cases missing: pn_6 and pn_7`
 - [X] `► Dockerize in a container`
+- [X] `► Create a volume in the container app/result to store the output`
 - [x] `► Move sensitive data to a .env file`
-- [ ] `► Test functions missing`
+- [x] `► Test functions missing`
+- [x] `► Video demo`

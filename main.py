@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Check if the folder exists
     if os.path.exists(root_folder) and os.path.isdir(root_folder):
         # Get the list of files (without extensions) inside the 'pn' folder
-        pn_paths = [os.path.join(root_folder, f).replace('\\', '/') for f in os.listdir(root_folder) if os.path.isfile(os.path.join(root_folder, f))]
+        pn_paths = [os.path.join(root_folder, f) for f in os.listdir(root_folder) if os.path.isfile(os.path.join(root_folder, f))]
     else:
         print(f"Error: The folder '{root_folder}' does not exist.")
     
@@ -55,5 +55,7 @@ if __name__ == "__main__":
             with open(output_file_path, 'a') as output_file:  # Use 'a' to append the output
                 output_file.write(f"{pn_path}:\n")
                 output_file.write(str(output) + '\n\n')
+                print(f"{pn_path}:")
+                print(str(output) + '\n\n')
                 
-            print(f"Processed {pn_path}, output written to {output_file_path}")
+            #print(f"Processed {pn_path}, output written to {output_file_path}")
