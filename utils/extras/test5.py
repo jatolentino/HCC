@@ -5,6 +5,12 @@ from langgraph.graph import END, StateGraph
 from langchain_google_vertexai import VertexAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from dotenv import load_dotenv
+load_dotenv()
+
+PROJECT_ID = os.getenv('PROJECT_ID')
+LOCATION = os.getenv('LOCATION')
+CREDENTIALS_PATH = os.getenv('CREDENTIALS_PATH')
 
 # Define the state schema for the graph
 class GraphState(TypedDict):
@@ -57,9 +63,9 @@ def extract_condition_data(state: GraphState) -> GraphState:
     try:
         # Initialize real Vertex AI model
         model = initialize_vertex_model(
-            project_id='hcc-project-452815',  # Replace with your GCP project ID
-            location="us-central1",  # Replace with your preferred region
-            credentials_path=r"C:\vertexai\hcc-project-452815-6fcd339bc332.json"  # Replace with path to your credentials file
+            project_id = PROJECT_ID,
+            location = LOCATION,
+            credentials_path = CREDENTIALS_PATH
         )
 
         # Create and run extraction chain

@@ -1,6 +1,6 @@
-Output for pn/pn_0:
+pn/pn_0:
 [{}, {}, {}, {}]
 
-Output for pn/pn_1:
+pn/pn_1:
 [{}, {}, {}, {}]
 

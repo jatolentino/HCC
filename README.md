@@ -20,10 +20,10 @@ The transition between layers is made in 5 phases determined by the following fu
 - `extract_assessment_plan()`: Extracts the assessment plan section from progress note file
 - `extract_each_plan()`: Extracts an individual assessment plan from the assessment plan section
 - `match_icd10_codes()`: Extract ICD-10 patterns/codes (ICD-10 can be considered as a superset<sup>1</sup> of HCC codes)
-- `is_icd10_an_hcc()`: Determines if the ICD-10 patern is an HCC code
+- `is_icd10_an_hcc()`: Determines if the ICD-10 patern is an HCC code. In this step we map the ICD-10 code to the `HCC_relevant_codes.json` file for a rapid search in O(1)
 - `langGraph_evaluation()`: Extracts the condition_data from an assessment plan with Vertex AI model
 
->**Notes**: Extrictly speaking HCC is not a subset of ICD-10, but HCC uses the nomenclature and codes from ICD-10, HCC groups codes in categories in a different fashion, but in terms of regex expression, it could be considered that ICD-10 is a superset of ICD-10
+>*1. Superset*: Extrictly speaking ICD-10 is not a superset of HCC, but HCC uses the nomenclature and codes from ICD-10. HCC groups codes in categories in a different fashion, but in terms of regex expression, it could be considered that ICD-10 is a superset of ICD-10.
 
 The following Diagram depicts the layered approach and 
 
@@ -34,15 +34,23 @@ The following Diagram depicts the layered approach and
 
 > **Note: Hash table and dictionary are two words used indistinctly**
 ### 2. How to run it
+- Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
+
+```sh
+PROJECT_ID=
+LOCATION=
+CREDENTIALS_PATH=
+PROGRESS_NOTES_FOLDER=
+```
 
 - Build the docker image
     ```sh
-    docker build -t HCC-image .
+    docker build -t hcc-image .
     ```
 
 - Run the Docker container, mounting the result directory to access the output:
     ```sh
-    docker run -v $(pwd)/result:/app/result HCC-image
+    docker run -v $(pwd)/result:/app/result hcc-image
     ```
 
 ### 3. Folder structure
@@ -224,23 +232,48 @@ This generates the file `HCC_relevant_codes.json` that has a hash table with thi
 }
 ```
 
-### 6. How to run it
-Change what progress_note to analyze setting the path to the file in `pn_to_analyze = "progress_notes/pn_9"` of `relevantHCCcodes.py` and run:
+### 6. How to set it up locally
+Create the virtual enviroment and install the packages
+```sh
+poetry install
+
+```
+Activate the environment
+```sh
+poetry sheell
+```
+
+Or
 
 ```sh
-python relevantHCCcodes.py
+source .venv/Scripts/activate
 ```
-Outputs: 
+
+### 7. How to run it locally
+- Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
+
 ```sh
-['E109']
+PROJECT_ID=
+LOCATION=
+CREDENTIALS_PATH=
+PROGRESS_NOTES_FOLDER=
 ```
-### 7. Tests
+
+- After the python packages have been install with poetry (step 6.), run the script locally
+
+```sh
+python main.py
+```
+
+>Note: Verify that the folder to analyze is defined in the parameter `root_folder` within the main.py file. The output will be stored in the `result/output` file
+
+### 8. Tests
 Run
 ```sh
 pytest
 ```
 
-### 8. TO-DO
+### 9. TO-DO
 - [X] `► Functionn to extract codes`
 - [X] `► Functionn to convert a *.csv file to a python hash table`
 - [X] `► Function to search in a HCC hash table`
@@ -248,4 +281,5 @@ pytest
 - [X] `► Verify error handling where it's missing`
 - [X] `► Edge cases missing: pn_6 and pn_7`
 - [X] `► Dockerize in a container`
+- [x] `► Move sensitive data to a .env file`
 - [ ] `► Test functions missing`

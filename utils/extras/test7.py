@@ -5,6 +5,13 @@ from langgraph.graph import END, StateGraph
 from langchain_google_vertexai import VertexAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from dotenv import load_dotenv
+load_dotenv()
+
+PROJECT_ID = os.getenv('PROJECT_ID')
+LOCATION = os.getenv('LOCATION')
+CREDENTIALS_PATH = os.getenv('CREDENTIALS_PATH')
+
 
 # Define the state schema for the graph
 GraphState = TypedDict('GraphState', {
@@ -54,9 +61,9 @@ def extract_condition_data(state: GraphState) -> GraphState:
     assessment_plan = state["assessment_plan"]
     try:
         model = initialize_vertex_model(
-            project_id='hcc-project-452815',
-            location="us-central1",
-            credentials_path=r"C:\vertexai\hcc-project-452815-6fcd339bc332.json"
+            project_id = PROJECT_ID,
+            location = LOCATION,
+            credentials_path = CREDENTIALS_PATH
         )
         extraction_chain = create_extraction_prompt() | model | StrOutputParser()
         extracted_text = extraction_chain.invoke({"assessment_plan": assessment_plan})

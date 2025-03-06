@@ -2,6 +2,10 @@ import os
 from utils.regex.regex_utils import extract_assessment_plan, \
     extract_each_plan, match_icd10_codes, is_icd10_an_hcc
 from pipeline import langGraph_evaluation
+from dotenv import load_dotenv
+load_dotenv()
+
+progress_notes_folder=os.getenv('PROGRESS_NOTES_FOLDER')
 
 def layers(progress_note):
     try:
@@ -29,7 +33,7 @@ def layers(progress_note):
 
 if __name__ == "__main__":
     # Define the root folder path
-    root_folder = 'pn'
+    root_folder = progress_notes_folder
     result_folder = 'result'
 
     # Check if the folder exists

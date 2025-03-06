@@ -1,11 +1,17 @@
 import vertexai
 from vertexai.preview.generative_models import GenerativeModel
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\vertexai\hcc-project-452815-6fcd339bc332.json"
+PROJECT_ID = os.getenv('PROJECT_ID')
+LOCATION = os.getenv('LOCATION')
+CREDENTIALS_PATH = os.getenv('CREDENTIALS_PATH')
 
-project_id = 'hcc-project-452815'
-location = 'us-central1'
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDENTIALS_PATH
+
+project_id = PROJECT_ID
+location = LOCATION
 
 vertexai.init(project=project_id, location=location)
 
