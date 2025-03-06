@@ -110,3 +110,26 @@ def langGraph_evaluation(assessment_plan: str) -> Dict[str, Any]:
     except Exception as e:
         # Catch all exceptions and print an error message
         return f"Error occurred: {str(e)}"
+    
+if __name__ == "__main__":
+    sample_input = """None recorded.
+ROS
+ROS as noted in the HPI
+Physical Exam
+None recorded.
+Assessment / Plan
+
+1. Gastroesophageal reflux disease -
+   Stable
+   Continue the antacids
+   F/U in 3 months
+   K21.9: Gastro-esophageal reflux disease without esophagitis
+
+2. Hyperglycemia due to type 2 diabetes mellitus -
+   Worsening
+   Continue Metformin1000 mg BID and Glimepiride 8 mg
+   Recommend a low sugar and low carbohydrate diet.
+   Discussed 1/2 plate with non-starchy vegetables
+   Include healthy fats in your meal like: Olive oil
+   E11.65: Type 2 diabetes mellitus with hyperglycemia"""
+    print(langGraph_evaluation(sample_input))

@@ -1,26 +1,71 @@
 ## HCC Assignement:
 
-### 1. Draft
-This is a simple Regex matching that retrieves HCC codes in O(1) from the HCC hash table, only by searching the codes via pattern matching.
+### 1. Overview
+<!-- This is a simple Regex matching that retrieves HCC codes in O(1) from the HCC hash table, only by searching the codes via pattern matching.
 
 To be especific:
 - O(1): To search the code within the dictionary from `HCC_relevant_codes.json`
-- O(n): To extract codes from the progress notes, where `n` is the number of lines of each note.
+- O(n): To extract codes from the progress notes, where `n` is the number of lines of each note. -->
+The following implementation is divided in a set of regex layers, a hash table comparision to validate HCC codes and a LangGraph pipeline. In a nutshell, several progress notes are analyzed and the final output after the analysis process is:
+```
+    {
+        "condition_code": "<str>",
+        "condition_name": "<str>",
+        "is_hcc":         "<boolean>",
+        "condition_data": "<str>"
+    },
+```
+Being the value of `is_hcc` True or False if it the code found in the progress note is relevant to HCC or not.
+The transition between layers is made in 5 phases determined by the following functions:
+- `extract_assessment_plan()`: Extracts the assessment plan section from progress note file
+- `extract_each_plan()`: Extracts an individual assessment plan from the assessment plan section
+- `match_icd10_codes()`: Extract ICD-10 patterns/codes (ICD-10 can be considered as a superset<sup>1</sup> of HCC codes)
+- `is_icd10_an_hcc()`: Determines if the ICD-10 patern is an HCC code
+- `langGraph_evaluation()`: Extracts the condition_data from an assessment plan with Vertex AI model
 
-> **Note: Hash table and dictionary are two words used indistinctly**
+>**Notes**: Extrictly speaking HCC is not a subset of ICD-10, but HCC uses the nomenclature and codes from ICD-10, HCC groups codes in categories in a different fashion, but in terms of regex expression, it could be considered that ICD-10 is a superset of ICD-10
+
+The following Diagram depicts the layered approach and 
 
 <img src="./images/full-layers.svg" />
 
+<p style="text-align:center;"><b>Fig. 1.</b> Layered Implementation</p>
 
 
-### 2. Folder structure
+> **Note: Hash table and dictionary are two words used indistinctly**
+### 2. How to run it
+
+- Build the docker image
+    ```sh
+    docker build -t HCC-image .
+    ```
+
+- Run the Docker container, mounting the result directory to access the output:
+    ```sh
+    docker run -v $(pwd)/result:/app/result HCC-image
+    ```
+
+### 3. Folder structure
 ```sh
+.
 |-- AI Engineer Technical Test.pdf
 |-- HCC_relevant_codes.csv
+|-- HCC_relevant_codes.json
 |-- README.md
-|-- convertCSVtoDictionary.py
-|-- data.json
+|-- __pycache__
+|   |-- langgraph.cpython-311.pyc
+|   `-- pipeline.cpython-311.pyc
+|-- draft.excalidraw
+|-- images
+|   |-- 1-layers.svg
+|   |-- 2-layers.svg
+|   |-- full-layers.svg
+|   `-- initial_draft.svg
+|-- main.py
+|-- pipeline.py
+|-- poetry.lock
 |-- progress_notes
+|   |-- pn_0
 |   |-- pn_1
 |   |-- pn_2
 |   |-- pn_3
@@ -30,10 +75,135 @@ To be especific:
 |   |-- pn_7
 |   |-- pn_8
 |   `-- pn_9
-|-- relevantHCCcodes.py
+|-- pyproject.toml
+|-- samples
+|   |-- input
+|   `-- output
+|-- tempCodeRunnerFile.py
+|-- tests
+|   `-- utils
+|       `-- regex
+|           |-- __pycache__
+|           |   `-- test_regex_utils.cpython-311-pytest-8.3.5.pyc
+|           `-- test_regex_utils.py
+`-- utils
+    |-- convertCSVtoDictionary.py
+    |-- extras
+    |   |-- test1.py
+    |   |-- test2.py
+    |   |-- test3.py
+    |   |-- test4.py
+    |   |-- test5.py
+    |   |-- test6.py
+    |   `-- test7.py
+    |-- regex
+    |   |-- HCC_relevant_codes.json
+    |   |-- __init__.py
+    |   |-- __pycache__
+    |   |   |-- __init__.cpython-311.pyc
+    |   |   `-- regex_utils.cpython-311.pyc
+    |   `-- regex_utils.py
+    `-- relevantHCCcodes.py
 ```
 
-### 3. Convert the CSV to a python hash table for `O(1)` search
+### 4. LangGraph Pipeline `pipeline.py`
+
+This code defines a pipeline to process an **assessment plan** and extract **condition management data** using a combination of **Vertex AI** and a **StateGraph**. The main objective is to process the input assessment plan, extract relevant treatment or management details, and format them into a structured output (condition data). Below is a breakdown of how the code works:
+
+---
+
+#### 4.1. **GraphState Definition**
+   - **GraphState** is a `TypedDict` that defines the state schema used throughout the LangGraph pipeline.
+     - `assessment_plan`: The input text (assessment plan) to be processed.
+     - `extracted_text`: The intermediate result containing the extracted information.
+     - `condition_data`: The final output after formatting the extracted information.
+
+#### 4.2. **Vertex AI Initialization**
+   - **initialize_vertex_model()**: Initializes a **Vertex AI** model (using Google's Gemini model) with proper credentials and project settings.
+   - The model is set to work in the **"us-central1"** location with a **temperature of 0**, ensuring deterministic responses.
+
+#### 4.3. **Extraction Prompt Definition**
+   - **create_extraction_prompt()**: A predefined prompt template that instructs the AI model to extract specific pieces of information from the assessment plan:
+     - **Relevant information**: Medications, counseling, management instructions, diagnostic/testing plans, and referrals.
+     - **Exclusion criteria**: Status descriptions, diagnostic codes, vital signs, and condition names.
+   - This prompt structure helps guide the model's behavior and ensure consistency in extraction.
+
+#### 4.4. **Extracting Condition Data**
+   - **extract_condition_data()**: 
+     - Takes the **assessment_plan** as input.
+     - Invokes the Vertex AI model and applies the extraction prompt.
+     - The model processes the input text and extracts the relevant management data.
+     - If successful, the extracted text is returned as part of the updated state; if an error occurs, the state is updated with an empty string.
+
+#### 4.5. **Formatting Extracted Text as JSON**
+   - **format_as_json()**:
+     - Checks if any text was extracted.
+     - If present, it formats the extracted data into a JSON-compatible format (a list of strings).
+     - It ensures that each extracted line is on a new line and non-empty lines are included.
+     - Returns the formatted `condition_data` as a JSON string, ready for further use.
+
+#### 4.6. **StateGraph Construction**
+   - **create_graph()**:
+     - Defines a state graph workflow using the **StateGraph** class.
+     - The graph has two main nodes:
+       - **extract_condition_data**: Extracts condition-related information from the assessment plan.
+       - **format_json**: Formats the extracted text into a structured JSON output.
+     - The nodes are connected, and the entry point of the graph is set to **extract_condition_data**.
+
+#### 4.7. **Main Pipeline Function**
+   - **langGraph_evaluation()**:
+     - This is the main pipeline function.
+     - It takes an **assessment_plan** as input (a string) and returns the **condition_data** extracted from the input plan.
+     - It validates that the input is a string.
+     - The pipeline invokes the graph and returns the formatted output, ensuring the correct type of output is returned (either a list or an error message).
+     - In case of errors, the function catches exceptions and returns a detailed error message.
+
+The following State diagram shows connection between nodes:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Initialize_Vertex_AI
+    Initialize_Vertex_AI --> Create_Extraction_Prompt
+    Create_Extraction_Prompt --> Extract_Condition_Data
+    Extract_Condition_Data --> Format_As_JSON
+    Format_As_JSON --> [*]
+    
+    state Initialize_Vertex_AI {
+        [*] --> Set_Environment_Variables
+        Set_Environment_Variables --> Initialize_Model
+        Initialize_Model --> [*]
+    }
+
+    state Create_Extraction_Prompt {
+        [*] --> Define_Prompt
+        Define_Prompt --> [*]
+    }
+
+    state Extract_Condition_Data {
+        [*] --> Invoke_Model
+        Invoke_Model --> Extract_Text
+        Extract_Text --> Return_Extracted_Text
+        Return_Extracted_Text --> [*]
+    }
+
+    state Format_As_JSON {
+        [*] --> Check_Extracted_Text
+        Check_Extracted_Text --> Format_Extracted_Data
+        Format_Extracted_Data --> Return_Condition_Data
+        Return_Condition_Data --> [*]
+    }
+    
+    %% Error Handling
+    Extract_Condition_Data -->|Error| Error_Handler
+    Error_Handler --> [*]
+    
+    Format_As_JSON -->|Error| Error_Handler
+    Error_Handler --> [*]
+```
+
+<p style="text-align:center;"><b>Fig. 2.</b> Pipeline Graph of `langGraph_evaluation()`</p>
+
+### 5. Convert the CSV to a python hash table for `O(1)` search
 
 Run
 ```sh
@@ -54,23 +224,7 @@ This generates the file `HCC_relevant_codes.json` that has a hash table with thi
 }
 ```
 
-### 4. Relevant codes extraction
-#### 4.1. Function `extract_codes`
-This function extract all the codes from a progress note file in `./progress_notes`
-
-For `./progress_notes/pn_8`, the output looks like this (`extracted codes`):
-```sh
-['E109', 'G43909', 'G4733', 'I10', 'E785', 'K219', 'F329']
-```
-#### 4.2. Function `check_key_in_json`
-This function evaluates if the `extracted codes` fall inside the HCC relevant codes (keys on the dictionary within `HCC_relevant_codes.json`)
-
-The HCC codes for `./progress_notes/pn_8` looks like this:
-```sh
-['E109']
-```
-
-### 5. How to run it
+### 6. How to run it
 Change what progress_note to analyze setting the path to the file in `pn_to_analyze = "progress_notes/pn_9"` of `relevantHCCcodes.py` and run:
 
 ```sh
@@ -80,12 +234,18 @@ Outputs:
 ```sh
 ['E109']
 ```
+### 7. Tests
+Run
+```sh
+pytest
+```
 
-### 6. TO-DO
+### 8. TO-DO
 - [X] `► Functionn to extract codes`
 - [X] `► Functionn to convert a *.csv file to a python hash table`
 - [X] `► Function to search in a HCC hash table`
-- [ ] `► Work on a layered approach`
-- [ ] `► Verify error handling where it's missing`
+- [X] `► Work on a layered approach`
+- [X] `► Verify error handling where it's missing`
+- [X] `► Edge cases missing: pn_6 and pn_7`
+- [X] `► Dockerize in a container`
 - [ ] `► Test functions missing`
-- [ ] `► Edge cases missing: pn_6 and pn_7`

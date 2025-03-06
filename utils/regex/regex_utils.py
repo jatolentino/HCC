@@ -91,7 +91,8 @@ def extract_each_plan(text):
     lines = text.splitlines()
     len_text = len(lines)
     start_of_section_idx_line = []
-    pattern = r"(^(\s?\d+)\.\s)|(^(\s\d+)\)\s)"
+    #pattern = r"(^(\s?\d+)\.\s)|(^(\s\d+)\)\s)"  #2nd part was not picking 2)
+    pattern = r"(^(\s?\d+)\.\s)|(^\s*\d+\))"
     
     for index, line in enumerate(lines):
         if re.match(pattern, line):
@@ -172,20 +173,17 @@ def is_icd10_an_hcc(code, text):
         if not isinstance(code, str):
             raise ValueError("Input code must be a string")
 
-        # Remove the dot from the code:
+        # Remove the dot from the code for HCC matching
         code = code.replace('.', '')
+        
         # Check if the code exists in the dictionary
         partial_output = {}
         if code in HCC_data:
-            #print(f"The code '{code}' is present in the JSON file.")
             partial_output["condition_code"] = code
             partial_output["condition_name"] = HCC_data[code]
-            partial_output["is_hcc"] = True
-            # partial_output["codition_data"] = langGraph_evaluation(text)
-            
+            partial_output["is_hcc"] = True    
         else:
             partial_output["condition_code"] = code
-            # partial_output["condition_name"] = HCC_data[code]
             partial_output["is_hcc"] = False
         return partial_output
     except FileNotFoundError:

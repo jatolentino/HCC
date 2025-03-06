@@ -6,3 +6,6 @@ tempCodeRunnerFile.py
 .venv
 .pytest_cache
 .hcc-project-*
+__pycache__
+.git
+pn
