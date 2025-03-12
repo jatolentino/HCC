@@ -1,0 +1,7 @@
+{
+    "dependencies": ["./pyproject.toml"],
+    "graphs": {
+      "hcc_extractor": "./packages/workflows/hcc_extractor/v0/agent/__init__.py:hcc_extraction_agent"
+    },
+    "python_version": "3.11"
+  }

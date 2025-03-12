@@ -1,12 +1,68 @@
-#progress_notes
-AI Engineer Technical Test.pdf
-#HCC_relevant_codes.csv
-tempCodeRunnerFile.py
-.~lock.HCC_relevant_codes.csv#
-.venv
-.pytest_cache
-.hcc-project-*
-__pycache__
-.git
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
 .env
-hcc-project-*.json
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Google Service Accounts
+credentials/*
+!credentials/.gitkeep
+
+# Project output
+results/*
+!results/.gitkeep
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Keys
+credentials
+credentials/service-account.json

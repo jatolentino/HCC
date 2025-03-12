@@ -1,0 +1,3 @@
+"""
+HCC Extractor App package.
+"""

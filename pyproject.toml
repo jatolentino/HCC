@@ -1,36 +1,41 @@
-[project]
-name = "hcc"
-version = "0.1.0"
-description = "assignement"
-authors = [
-    {name = "jatolentino",email = "jose_antoniotv@hotmail.com"}
-]
-readme = "README.md"
-requires-python = ">=3.11,<4.0"
-dependencies = [
-    "pytest (>=8.3.5,<9.0.0)",
-    "google-cloud-aiplatform (>=1.82.0,<2.0.0)",
-    "langchain-core (>=0.3.41,<0.4.0)",
-    "langchain-google-vertexai (>=2.0.14,<3.0.0)",
-    "langchain-community (>=0.3.19,<0.4.0)",
-    "langgraph (>=0.3.5,<0.4.0)",
-    "python-dotenv (>=1.0.1,<2.0.0)",
-]
-
 [tool.poetry]
-package-mode = false
-packages = [
-    { include = "." }  # This tells Poetry to include everything in the root directory
-]
+name = "clinical-hcc-extractor"
+version = "0.1.0"
+description = "A tool to extract HCC-relevant conditions from clinical progress notes"
+authors = ["Jose Tolentino"]
+readme = "README.md"
+package-mode = true
+packages = [{ include = "packages" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pydantic = "^2.9.2"
+mypy = "^1.11.2"
+python-dotenv = "^1.0.1"
+langchain = "^0.3.1"
+google-cloud-aiplatform = "^1.68.0"
+langchain-google-vertexai = "^2.0.1"
+google-auth = "^2.35.0"
+langchain-google-genai = "^2.0.0"
+langchain-community = "^0.3.8"
+typing-extensions = "^4.12.2"
+langgraph = "^0.2.60"
+langgraph-cli = { extras = ["inmem"], version = "^0.1.65" }
+langgraph-api = "^0.0.15"
+pandas = "^2.2.0"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.11.2"
+pytest-asyncio = "0.18.3"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-#[tool.pytest.ini_options]
-# Directory where pytest should start searching for tests
-#testpaths = ["tests"]
-# Pattern for test file discovery
-#python_files = "test_*.py"
-# Pattern for test function discovery
-#python_functions = "test_*"

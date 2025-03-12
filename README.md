@@ -1,295 +1,145 @@
-## HCC Assignement
+# Clinical HCC Extractor
 
-<div align="center">
-    <img src="./assets/gifs/demo_HCC.gif"/>
-</div>
+## Overview
+The Clinical HCC Extractor is a Python-based AI solution that automates the extraction of HCC-relevant conditions from clinical progress notes. It leverages Google's Vertex AI Gemini 1.5 Flash and the LangGraph framework to process clinical notes, identify medical conditions, and determine their HCC relevance.
 
-<div align="center">
-Watch the video demo <a href="./assets/videos/demo_HCC.mp4">here 🎥</a> 
-</div>
+## Features
+- Extracts medical conditions with ICD-10 codes from clinical progress notes
+- Validates conditions against HCC-relevant codes
+- Structures extracted data in a standardized JSON format
+- Processes multiple progress notes in batch
+- Stores results in a mounted volume for easy access
 
-### 1. Overview
-The following implementation is divided in a set of regex layers, a hash table comparision to validate HCC codes and a LangGraph pipeline. In a nutshell, several progress notes are analyzed and the final output after the analysis process is:
-```
-    {
-        "condition_code": "<str>",
-        "condition_name": "<str>",
-        "is_hcc":         "<boolean>",
-        "condition_data": "<str>"
-    },
-```
-Being the value of `is_hcc` True or False if it the code found in the progress note is relevant to HCC or not.
-The transition between layers is made in 5 phases determined by the following functions:
-- `extract_assessment_plan()`: Extracts the assessment plan section from progress note file
-- `extract_each_plan()`: Extracts an individual assessment plan from the assessment plan section
-- `match_icd10_codes()`: Extract ICD-10 patterns/codes (ICD-10 can be considered as a superset<sup>1</sup> of HCC codes)
-- `is_icd10_an_hcc()`: Determines if the ICD-10 patern is an HCC code. In this step we map the ICD-10 code to the `HCC_relevant_codes.json` file for a rapid search in O(1)
-- `langGraph_evaluation()`: Extracts the condition_data from an assessment plan with Vertex AI model
+## Architecture
+The solution follows a layered architecture:
+1. **Document Loading Layer**: Reads and prepares progress notes for processing
+2. **Condition Extraction Layer**: Uses LLMs to extract conditions and their details
+3. **HCC Validation Layer**: Verifies if extracted conditions are HCC-relevant
+4. **Output Layer**: Formats and outputs the structured data
 
->*1. Superset*: Extrictly speaking ICD-10 is not a superset of HCC, but HCC uses the nomenclature and codes from ICD-10. HCC groups codes in categories in a different fashion, but in terms of regex expression, it could be considered that ICD-10 is a superset of ICD-10.
+## Setup Instructions
 
-The following Diagram depicts the layered approach and 
+### Prerequisites
+- Python 3.11 or higher
+- Docker (for containerized deployment)
+- Google Cloud Service Account with access to Vertex AI
 
-<img src="./assets/images/full-layers.svg" />
+### Installation
 
-<div align="center">
-    <b>Fig. 1.</b> Layered Implementation
-</div>
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/clinical-hcc-extractor.git
+   cd clinical-hcc-extractor
+   ```
 
-> **Note: Hash table and dictionary are two words used indistinctly**
+2. **Set up the environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit the .env file and add your Google Cloud credentials
+   ```
 
-### 2. How to run it
-- Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
+3. **Install dependencies using Poetry**
+   ```bash
+   poetry install
+   ```
 
-    ```sh
-    PROJECT_ID=
-    LOCATION=
-    CREDENTIALS_PATH=
-    PROGRESS_NOTES_FOLDER=
-    ```
+4. **Prepare your Google Cloud credentials**
+   - Create a service account in Google Cloud Console
+   - Grant it access to Vertex AI (requires the "Vertex AI User" role at minimum)
+   - Download the JSON key file and save it as **`credentials/service-account.json`**
+   - Make sure the credentials directory exists: `mkdir -p credentials`
+   - Ensure the path in your .env file matches where you saved the credentials
 
-- Build the docker image
-    ```sh
-    docker build -t hcc-image .
-    ```
+## Running the Solution
 
-- Run the Docker container, mounting the result directory to access the output:
-    ```sh
-    docker run -v $(pwd)/result:/app/result hcc-image
-    ```
+### Using Poetry (Local Development)
+```bash
+# Process all progress notes and output results
+poetry run python apps/hcc_extractor_app/app.py
 
-### 3. Folder structure
-```sh
-.
-|-- AI Engineer Technical Test.pdf
-|-- HCC_relevant_codes.csv
-|-- HCC_relevant_codes.json
-|-- README.md
-|-- __pycache__
-|   |-- langgraph.cpython-311.pyc
-|   `-- pipeline.cpython-311.pyc
-|-- draft.excalidraw
-|-- images
-|   |-- 1-layers.svg
-|   |-- 2-layers.svg
-|   |-- full-layers.svg
-|   `-- initial_draft.svg
-|-- main.py
-|-- pipeline.py
-|-- poetry.lock
-|-- progress_notes
-|   |-- pn_0
-|   |-- pn_1
-|   |-- pn_2
-|   |-- pn_3
-|   |-- pn_4
-|   |-- pn_5
-|   |-- pn_6
-|   |-- pn_7
-|   |-- pn_8
-|   `-- pn_9
-|-- pyproject.toml
-|-- samples
-|   |-- input
-|   `-- output
-|-- tempCodeRunnerFile.py
-|-- tests
-|   `-- utils
-|       `-- regex
-|           |-- __pycache__
-|           |   `-- test_regex_utils.cpython-311-pytest-8.3.5.pyc
-|           `-- test_regex_utils.py
-`-- utils
-    |-- convertCSVtoDictionary.py
-    |-- extras
-    |   |-- test1.py
-    |   |-- test2.py
-    |   |-- test3.py
-    |   |-- test4.py
-    |   |-- test5.py
-    |   |-- test6.py
-    |   `-- test7.py
-    |-- regex
-    |   |-- HCC_relevant_codes.json
-    |   |-- __init__.py
-    |   |-- __pycache__
-    |   |   |-- __init__.cpython-311.pyc
-    |   |   `-- regex_utils.cpython-311.pyc
-    |   `-- regex_utils.py
-    `-- relevantHCCcodes.py
+# Start the LangGraph development web app
+poetry run langgraph dev
 ```
 
-### 4. LangGraph Pipeline `pipeline.py`
+### Using Docker
+```bash
+# Build the Docker image
+docker build -t clinical-hcc-extractor \
+  --build-arg GOOGLE_API_KEY=your_api_key \
+  --build-arg GOOGLE_PROJECT_ID=your_project_id .
 
-This code defines a pipeline to process an **assessment plan** and extract **condition management data** using a combination of **Vertex AI** and a **StateGraph**. The main objective is to process the input assessment plan, extract relevant treatment or management details, and format them into a structured output (condition data). Below is a breakdown of how the code works:
+# Run the container with mounted volumes for credentials and results
+# On Windows Git Bash, use this format
+docker run \
+  -v //$(pwd)/credentials/service-account.json:/app/credentials/service-account.json \
+  -v //$(pwd)/results:/app/results \
+  clinical-hcc-extractor
 
----
+# On Linux/Mac
+docker run \
+  -v /path/to/service-account.json:/app/credentials/service-account.json \
+  -v $(pwd)/results:/app/results \
+  clinical-hcc-extractor
 
-#### 4.1. **GraphState Definition**
-   - **GraphState** is a `TypedDict` that defines the state schema used throughout the LangGraph pipeline.
-     - `assessment_plan`: The input text (assessment plan) to be processed.
-     - `extracted_text`: The intermediate result containing the extracted information.
-     - `condition_data`: The final output after formatting the extracted information.
+# On Windows PowerShell, use this format for mounting volumes
+docker run `
+  -v "${PWD}/credentials/service-account.json:/app/credentials/service-account.json" `
+  -v "${PWD}/results:/app/results" `
+  clinical-hcc-extractor
 
-#### 4.2. **Vertex AI Initialization**
-   - **initialize_vertex_model()**: Initializes a **Vertex AI** model (using Google's Gemini model) with proper credentials and project settings.
-   - The model is set to work in the **"us-central1"** location with a **temperature of 0**, ensuring deterministic responses.
-
-#### 4.3. **Extraction Prompt Definition**
-   - **create_extraction_prompt()**: A predefined prompt template that instructs the AI model to extract specific pieces of information from the assessment plan:
-     - **Relevant information**: Medications, counseling, management instructions, diagnostic/testing plans, and referrals.
-     - **Exclusion criteria**: Status descriptions, diagnostic codes, vital signs, and condition names.
-   - This prompt structure helps guide the model's behavior and ensure consistency in extraction.
-
-#### 4.4. **Extracting Condition Data**
-   - **extract_condition_data()**: 
-     - Takes the **assessment_plan** as input.
-     - Invokes the Vertex AI model and applies the extraction prompt.
-     - The model processes the input text and extracts the relevant management data.
-     - If successful, the extracted text is returned as part of the updated state; if an error occurs, the state is updated with an empty string.
-
-#### 4.5. **Formatting Extracted Text as JSON**
-   - **format_as_json()**:
-     - Checks if any text was extracted.
-     - If present, it formats the extracted data into a JSON-compatible format (a list of strings).
-     - It ensures that each extracted line is on a new line and non-empty lines are included.
-     - Returns the formatted `condition_data` as a JSON string, ready for further use.
-
-#### 4.6. **StateGraph Construction**
-   - **create_graph()**:
-     - Defines a state graph workflow using the **StateGraph** class.
-     - The graph has two main nodes:
-       - **extract_condition_data**: Extracts condition-related information from the assessment plan.
-       - **format_json**: Formats the extracted text into a structured JSON output.
-     - The nodes are connected, and the entry point of the graph is set to **extract_condition_data**.
-
-#### 4.7. **Main Pipeline Function**
-   - **langGraph_evaluation()**:
-     - This is the main pipeline function.
-     - It takes an **assessment_plan** as input (a string) and returns the **condition_data** extracted from the input plan.
-     - It validates that the input is a string.
-     - The pipeline invokes the graph and returns the formatted output, ensuring the correct type of output is returned (either a list or an error message).
-     - In case of errors, the function catches exceptions and returns a detailed error message.
-
-The following State diagram shows connection between nodes:
-
-```mermaid
-stateDiagram-v2
-    [*] --> Initialize_Vertex_AI
-    Initialize_Vertex_AI --> Create_Extraction_Prompt
-    Create_Extraction_Prompt --> Extract_Condition_Data
-    Extract_Condition_Data --> Format_As_JSON
-    Format_As_JSON --> [*]
-    
-    state Initialize_Vertex_AI {
-        [*] --> Set_Environment_Variables
-        Set_Environment_Variables --> Initialize_Model
-        Initialize_Model --> [*]
-    }
-
-    state Create_Extraction_Prompt {
-        [*] --> Define_Prompt
-        Define_Prompt --> [*]
-    }
-
-    state Extract_Condition_Data {
-        [*] --> Invoke_Model
-        Invoke_Model --> Extract_Text
-        Extract_Text --> Return_Extracted_Text
-        Return_Extracted_Text --> [*]
-    }
-
-    state Format_As_JSON {
-        [*] --> Check_Extracted_Text
-        Check_Extracted_Text --> Format_Extracted_Data
-        Format_Extracted_Data --> Return_Condition_Data
-        Return_Condition_Data --> [*]
-    }
-    
-    %% Error Handling
-    Extract_Condition_Data -->|Error| Error_Handler
-    Error_Handler --> [*]
-    
-    Format_As_JSON -->|Error| Error_Handler
-    Error_Handler --> [*]
+# On Windows Command Prompt, use this format
+docker run ^
+  -v "%cd%\credentials\service-account.json:/app/credentials/service-account.json" ^
+  -v "%cd%\results:/app/results" ^
+  clinical-hcc-extractor
 ```
 
-<div align="center">
-    <b>Fig. 2.</b> Pipeline Graph of `langGraph_evaluation()
-</div>
+> **Important**: Make sure your service-account.json file has the necessary permissions to access Vertex AI. The file should be stored securely and never committed to version control.
 
-### 5. Convert the CSV to a python hash table for `O(1)` search
+## Accessing the Results
+The extracted conditions are saved as JSON files in the `results` directory (when running locally) or in the mounted volume (when running with Docker). Each progress note generates a separate JSON file with the following structure:
 
-Run
-```sh
-python convertCSVtoDictionary.py
-```
-
-This generates the file `HCC_relevant_codes.json` that has a hash table with this structure:
 ```json
-{
-    "ICD-10-CM Codes": "Description",
-    "A0104": "Typhoid arthritis",
-    "A0105": "Typhoid osteomyelitis",
-    "A021": "Salmonella sepsis",
-    "A0223": "Salmonella arthritis",
-    "A0224": "Salmonella osteomyelitis",
-    "A065": "Amebic lung abscess",
-    :
-}
+[
+  {
+    "condition_code": "K21.9",
+    "condition_name": "Gastroesophageal reflux disease",
+    "is_hcc": false,
+    "condition_data": "Stable\nContinue the antacids\nF/U in 3 months"
+  },
+  {
+    "condition_code": "E11.65",
+    "condition_name": "Hyperglycemia due to type 2 diabetes mellitus",
+    "is_hcc": true,
+    "condition_data": "Worsening\nContinue Metformin1000 mg BID and Glimepiride 8 mg\nRecommend a low sugar and low carbohydrate diet.\nDiscussed 1/2 plate with non-starchy vegetables\nInclude healthy fats in your meal like: Olive oil"
+  }
+]
 ```
 
-### 6. How to set it up locally
-Create the virtual enviroment and install the packages
-```sh
-poetry install
+## LangGraph Development Web App
+The LangGraph development web app allows you to visualize and debug the processing workflow:
 
-```
-Activate the environment
-```sh
-poetry shell
-```
+1. Start the app:
+   ```bash
+   poetry run langgraph dev
+   ```
 
-Or
+2. Open your browser and navigate to the URL shown in the terminal (typically http://localhost:8000)
 
-```sh
-source .venv/Scripts/activate
-```
+3. Use the web interface to trace and debug the execution graph
 
-### 7. How to run it locally
-- Create an `.env` file, and set your vertexai project_id, location, json credentials, and progress notes folder (being where main.py is the root directory), see a sample in `.sample.env`
+## Testing
+Run the tests to ensure the system is working correctly:
 
-    ```sh
-    PROJECT_ID=
-    LOCATION=
-    CREDENTIALS_PATH=
-    PROGRESS_NOTES_FOLDER=
-    ```
-
-- After the python packages have been install with poetry (step 6.), run the script locally
-
-    ```sh
-    python main.py
-    ```
-
->Note: Verify that the folder to analyze is defined in the parameter `root_folder` within the main.py file. The output will be stored in the `result/output` file
-
-### 8. Tests
-
-Run
-```sh
-pytest
+```bash
+poetry run pytest
 ```
 
-### 9. TO-DO
-- [X] `► Functionn to extract codes`
-- [X] `► Functionn to convert a *.csv file to a python hash table`
-- [X] `► Function to search in a HCC hash table`
-- [X] `► Work on a layered approach`
-- [X] `► Verify error handling where it's missing`
-- [X] `► Edge cases missing: pn_6 and pn_7`
-- [X] `► Dockerize in a container`
-- [X] `► Create a volume in the container app/result to store the output`
-- [x] `► Move sensitive data to a .env file`
-- [x] `► Test functions missing`
-- [x] `► Video demo`
+## Limitations and Known Issues
+- The system expects progress notes to follow a specific format with an "Assessment / Plan" section
+- Large batches of progress notes might require significant memory
+
+## Future Improvements
+- Add support for more diverse progress note formats
+- Implement parallel processing for better scalability
+- Enhance the extraction accuracy with domain-specific training
