@@ -1,0 +1,32 @@
+[
+  {
+    "condition_code": "F19.20",
+    "condition_name": "Substance use disorder moderate",
+    "is_hcc": true,
+    "condition_data": "- No relapses\n-will order UDS\n- continue to follow with NA\n- continue suboxone"
+  },
+  {
+    "condition_code": "E78.5",
+    "condition_name": "HLD",
+    "is_hcc": false,
+    "condition_data": "- No issues\n- Will order FLP\n- Continue statin"
+  },
+  {
+    "condition_code": "K21.9",
+    "condition_name": "GERD",
+    "is_hcc": false,
+    "condition_data": "- Worsening\n- Will order EGD and GI consult"
+  },
+  {
+    "condition_code": "I25.10",
+    "condition_name": "CAD",
+    "is_hcc": false,
+    "condition_data": "-stable, follow up with cardiology"
+  },
+  {
+    "condition_code": "K51.90",
+    "condition_name": "IBD",
+    "is_hcc": true,
+    "condition_data": "-stable, regular stools\n-follow up with GI\""
+  }
+]
