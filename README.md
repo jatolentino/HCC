@@ -1,4 +1,4 @@
-## HCC Assignement
+## HCC
 
 <div align="center">
     <img src="./assets/gifs/demo_HCC.gif"/>
