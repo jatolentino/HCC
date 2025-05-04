@@ -19,6 +19,7 @@ The following implementation is divided in a set of regex layers, a hash table c
         "condition_data": "<str>"
     },
 ```
+
 Being the value of `is_hcc` True or False if it the code found in the progress note is relevant to HCC or not.
 The transition between layers is made in 5 phases determined by the following functions:
 - `extract_assessment_plan()`: Extracts the assessment plan section from progress note file
