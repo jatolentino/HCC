@@ -4,7 +4,6 @@
     <img src="./assets/gifs/demo_HCC.gif"/>
 </div>
 
-
 <div align="center">
 Watch the video demo <a href="./assets/videos/demo_HCC.mp4">here 🎥</a> 
 </div>
