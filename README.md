@@ -8,6 +8,7 @@
 Watch the video demo <a href="./assets/videos/demo_HCC.mp4">here 🎥</a> 
 </div>
 
+
 ### 1. Overview
 The following implementation is divided in a set of regex layers, a hash table comparision to validate HCC codes and a LangGraph pipeline. In a nutshell, several progress notes are analyzed and the final output after the analysis process is:
 ```
